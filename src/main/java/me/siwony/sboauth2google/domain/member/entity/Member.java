@@ -1,7 +1,6 @@
 package me.siwony.sboauth2google.domain.member.entity;
 
 import lombok.*;
-import org.springframework.beans.factory.annotation.Required;
 
 import javax.persistence.*;
 
@@ -12,9 +11,9 @@ public class Member {
 
     @Getter
     @RequiredArgsConstructor
-    private enum Role{
+    public enum Role{
         ADMIN("ROLE_ADMIN", "관리자"),
-        ROLE_CLIENT("ROLE_CLIENT", "일반 사용자");
+        CLIENT("ROLE_CLIENT", "일반 사용자");
 
         private final String key;
         private final String title;
@@ -36,4 +35,11 @@ public class Member {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    public Member update(final String name, final String picture){
+        this.name = name;
+        this.picture = picture;
+
+        return this;
+    }
 }
