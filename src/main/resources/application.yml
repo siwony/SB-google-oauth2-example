@@ -1,3 +1,26 @@
 spring:
   profiles:
     include: google-oauth
+
+  ### DB ?? ###
+  datasource:
+    url: jdbc:h2:mem:oauth
+    driver-class-name: org.h2.Driver
+    username: sa
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        hbm2ddl:
+          auto: create
+    show-sql: true
