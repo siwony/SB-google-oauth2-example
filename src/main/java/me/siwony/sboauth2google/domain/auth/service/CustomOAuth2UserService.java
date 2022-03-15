@@ -1,6 +1,7 @@
 package me.siwony.sboauth2google.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.siwony.sboauth2google.domain.auth.dto.OAuthAttributes;
 import me.siwony.sboauth2google.domain.auth.dto.SessionMember;
 import me.siwony.sboauth2google.domain.member.entity.Member;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpSession;
 import java.util.Collections;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
@@ -27,11 +29,15 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     @Override
     public OAuth2User loadUser(final OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         final OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
-        final OAuth2User oAuth2User = delegate.loadUser(userRequest);
+        final OAuth2User oAuth2User = delegate.loadUser(userRequest); // DefaultOAuth2UserService가 대신 OAuth로 로그인한 유저 정보를 가져온다.
 
         final String registrationId = userRequest.getClientRegistration().getRegistrationId(); // OAuth 밴더를 구별하는 상수
         final String userNameAttributeName = userRequest.getClientRegistration()
                 .getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
+
+        log.debug("registrationId = '{}'", registrationId);
+        log.debug("userNameAttributeName = '{}'", userNameAttributeName);
+        log.debug("oAuth2User.getAttributes = '{}'", Collections.unmodifiableMap(oAuth2User.getAttributes()));
 
         final OAuthAttributes attributes = OAuthAttributes.of(
                 registrationId,
@@ -48,6 +54,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 attributes.getNameAttributeKey());
     }
 
+    /**
+     * OAuth 로그인을 하면 무조건 save를 하고 만약 정보가 변경되면 update를 진행한다.
+     */
     private Member saveOrUpdate(OAuthAttributes attributes) {
         Member user = memberRepository.findByEmail(attributes.getEmail())
                 .map(entity ->

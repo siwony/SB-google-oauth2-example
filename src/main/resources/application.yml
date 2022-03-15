@@ -24,3 +24,7 @@ spring:
         hbm2ddl:
           auto: create
     show-sql: true
+
+logging:
+  level:
+    me.siwony.sboauth2google: debug
