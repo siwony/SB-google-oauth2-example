@@ -6,6 +6,7 @@ import me.siwony.sboauth2google.domain.auth.dto.OAuthAttributes;
 import me.siwony.sboauth2google.domain.auth.dto.SessionMember;
 import me.siwony.sboauth2google.domain.member.entity.Member;
 import me.siwony.sboauth2google.domain.member.entity.MemberRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -19,18 +20,33 @@ import javax.servlet.http.HttpSession;
 import java.util.Collections;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final MemberRepository memberRepository;
     private final HttpSession httpSession;
+    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> delegateOAuth2UserService;
+
+    @Autowired
+    public CustomOAuth2UserService(final MemberRepository memberRepository, final HttpSession httpSession) {
+        this.memberRepository = memberRepository;
+        this.httpSession = httpSession;
+        this.delegateOAuth2UserService = new DefaultOAuth2UserService();
+    }
+
+    public CustomOAuth2UserService(
+            final MemberRepository memberRepository,
+            final HttpSession httpSession,
+            OAuth2UserService<OAuth2UserRequest, OAuth2User> delegateOAuth2UserService
+    ) {
+        this.memberRepository = memberRepository;
+        this.httpSession = httpSession;
+        this.delegateOAuth2UserService = delegateOAuth2UserService;
+    }
 
     @Override
     public OAuth2User loadUser(final OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        final OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
-        final OAuth2User oAuth2User = delegate.loadUser(userRequest); // DefaultOAuth2UserService가 대신 OAuth로 로그인한 유저 정보를 가져온다.
-
+        final OAuth2User oAuth2User = delegateOAuth2UserService.loadUser(userRequest); // DefaultOAuth2UserService가 대신 OAuth로 로그인한 유저 정보를 가져온다.
         final String registrationId = userRequest.getClientRegistration().getRegistrationId(); // OAuth 밴더를 구별하는 상수
         final String userNameAttributeName = userRequest.getClientRegistration()
                 .getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
