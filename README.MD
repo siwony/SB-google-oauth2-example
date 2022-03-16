@@ -2,7 +2,7 @@
 
 Spring Boot OAuth2를 이용한 Google 로그인 + redis session storage 에제
 
-### 프로젝트 구조
+### 주요 프로젝트 구조
 ```tree
 /src/main/java/me/siwony/sbaouth2google
 ├── SbOauth2GoogleApplication.java // application 진입점
@@ -13,7 +13,7 @@ Spring Boot OAuth2를 이용한 Google 로그인 + redis session storage 에제
 │   │   │   └── SessionMember.java // 로그인 된 사용자의 정보를 세션에 저장할 DTO
 │   │   └── service
 │   │       ├── AuthService.java
-│   │       └── CustomOAuth2UserService.java
+│   │       └── CustomOAuth2UserService.java // OAuth 구현체
 │   └── member
 │       ├── controller
 │       │   └── MemberController.java
