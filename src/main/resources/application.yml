@@ -2,6 +2,18 @@ spring:
   profiles:
     include: google-oauth
 
+  session:
+    store-type: redis
+    redis:
+      flush-mode: on_save
+      namespace: spring:session
+
+
+  redis:
+    host: localhost
+    password:
+    port: 6379
+
   ### DB ?? ###
   datasource:
     url: jdbc:h2:mem:oauth
@@ -24,6 +36,11 @@ spring:
         hbm2ddl:
           auto: create
     show-sql: true
+
+server:
+  servlet:
+    session:
+      timeout: 1m  # ?? ????? 1??? ??
 
 logging:
   level:
