@@ -23,24 +23,24 @@ import java.util.Collections;
 @Service
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
+    private final AuthService authService;
     private final MemberRepository memberRepository;
-    private final HttpSession httpSession;
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> delegateOAuth2UserService;
 
     @Autowired
-    public CustomOAuth2UserService(final MemberRepository memberRepository, final HttpSession httpSession) {
+    public CustomOAuth2UserService(final AuthService authService, final MemberRepository memberRepository) {
+        this.authService = authService;
         this.memberRepository = memberRepository;
-        this.httpSession = httpSession;
         this.delegateOAuth2UserService = new DefaultOAuth2UserService();
     }
 
     public CustomOAuth2UserService(
+            final AuthService authService,
             final MemberRepository memberRepository,
-            final HttpSession httpSession,
             OAuth2UserService<OAuth2UserRequest, OAuth2User> delegateOAuth2UserService
     ) {
+        this.authService = authService;
         this.memberRepository = memberRepository;
-        this.httpSession = httpSession;
         this.delegateOAuth2UserService = delegateOAuth2UserService;
     }
 
@@ -61,8 +61,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 oAuth2User.getAttributes()
         );
 
-        final Member member = saveOrUpdate(attributes);
-        httpSession.setAttribute("member", new SessionMember(member)); // 세션에 회원 정보 등록
+        if(isFirst(attributes.getEmail()))
+            authService.join(attributes);
+
+        final Member member = memberRepository.findByEmail(attributes.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("OAuth2회원가입이 정상적으로 발생하지 않음"));
+        authService.login(member, attributes);
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority(member.getRole().getKey())),
@@ -70,15 +74,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 attributes.getNameAttributeKey());
     }
 
-    /**
-     * OAuth 로그인을 하면 무조건 save를 하고 만약 정보가 변경되면 update를 진행한다.
-     */
-    private Member saveOrUpdate(OAuthAttributes attributes) {
-        Member user = memberRepository.findByEmail(attributes.getEmail())
-                .map(entity ->
-                        entity.update(attributes.getName(), attributes.getPicture())
-                ).orElse(attributes.toEntity());
-
-        return memberRepository.save(user);
+    private boolean isFirst(String email){
+        return !memberRepository.existsByEmail(email);
     }
 }
