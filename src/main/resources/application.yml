@@ -6,7 +6,7 @@ spring:
     store-type: redis
     redis:
       flush-mode: on_save
-      namespace: spring:session
+      namespace: spring:session # redis에 세션 저장시 네임스페이스
 
 
   redis:
@@ -14,7 +14,6 @@ spring:
     password:
     port: 6379
 
-  ### DB ?? ###
   datasource:
     url: jdbc:h2:mem:oauth
     driver-class-name: org.h2.Driver
@@ -40,7 +39,7 @@ spring:
 server:
   servlet:
     session:
-      timeout: 1m  # ?? ????? 1??? ??
+      timeout: 1m  # 세션 만료기간 설정 단위: m(분)
 
 logging:
   level:
