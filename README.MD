@@ -61,7 +61,8 @@ client-id와 client-secret은
 
 #### 주의사항
 `spring session data redis`의존성 사용시 `spring boot starter data redis`의존성이 반드시 필요합니다.  
-없다면 Spring Boot Application 시작 시점에 `org.springframework.beans.factory.BeanCreationException`이 발생하며 종료됩니다.
+없다면 Spring Boot Application 시작 시점에 `org.springframework.boot.autoconfigure.session.SessionRepositoryUnavailableException`이 발생하여 결과적으로
+`org.springframework.beans.factory.BeanCreationException`이 발생하며 종료됩니다.
 
 ```log
 org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.boot.autoconfigure.session.SessionAutoConfiguration$ServletSessionRepositoryValidator': Invocation of init method failed; nested exception is org.springframework.boot.autoconfigure.session.SessionRepositoryUnavailableException: No session repository could be auto-configured, check your configuration (session store type is 'redis')
